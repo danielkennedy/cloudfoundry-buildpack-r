@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# usage: bin/compile <build-dir> <cache-dir>
+
+# Fail fast, fail hard
+set -eo pipefail
+
+# Directories
+BUILD_DIR=$1
+CACHE_DIR=$2
+mkdir -p "$BUILD_DIR" "$CACHE_DIR"
+
+# Files
+DOWNLOAD=http://cran.r-project.org/src/base/R-3/R-3.1.1.tar.gz
+
+# Environment
+
+# Do we have curl?
+echo "-----> Installing curl... "
+which curl || apt-get install curl
+
+# Do we have a downloaded source tarball?
+if [ ! -e $CACHE_DIR/R-3.1.1.tar.gz ]
+then
+  echo "-----> Downloading R source... "
+  cd $CACHE_DIR
+  curl -sO $DOWNLOAD
+  tar -xvzf R-3.1.1.tar.gz
+fi
+
+if [ ! -e $BUILD_DIR/local/bin/perl ]
+then
+  echo "------> Compiling perl source... "
+  cd $CACHE_DIR/R-3.1.1
+  ./configure -des -Dprefix=$BUILD_DIR/local
+  make install
+fi
+
+echo "Complete."
